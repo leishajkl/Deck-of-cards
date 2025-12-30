@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choose Your Next Read — Decision Cards</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#101826;
+      --panel2:#0e1521;
+      --text:#e8eef7;
+      --muted:#a9b6c7;
+      --accent:#7aa2ff;
+      --ok:#3ddc97;
+      --warn:#ffcc66;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 900px at 20% 10%, #14213a 0%, var(--bg) 55%) fixed;
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    header{
+      width:min(980px, 94vw);
+      padding:22px 8px 10px;
+    }
+    h1{
+      margin:0 0 6px;
+      font-size: clamp(20px, 4vw, 30px);
+      letter-spacing:.2px;
+    }
+    .sub{
+      color:var(--muted);
+      margin:0;
+      line-height:1.35;
+      font-size: 14px;
+    }
+    .bar{
+      width:min(980px, 94vw);
+      margin: 10px 0 16px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .left, .right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button{
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(122,162,255,.22), rgba(122,162,255,.08));
+      color:var(--text);
+      padding:10px 14px;
+      border-radius: 999px;
+      cursor:pointer;
+      box-shadow: 0 8px 22px rgba(0,0,0,.25);
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+    button:hover{ border-color: rgba(122,162,255,.55); }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      border-color: rgba(255,255,255,.10);
+    }
+    .ghost{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:none;
+    }
+    .pill{
+      padding:8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size: 13px;
+      user-select:none;
+    }
+    .pill strong{ color:var(--text); font-weight:700; }
+    .status{
+      width:min(980px, 94vw);
+      padding:12px 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(16,24,38,.75), rgba(16,24,38,.45));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+      font-size:14px;
+      line-height:1.45;
+      margin-bottom: 16px;
+    }
+    .status b{ color: var(--text); }
+    .grid{
+      width:min(980px, 94vw);
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:14px;
+      padding-bottom: 34px;
+    }
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Card flip */
+    .card{
+      perspective: 1200px;
+      height: 210px;
+    }
+    .inner{
+      position:relative;
+      width:100%;
+      height:100%;
+      transition: transform .6s cubic-bezier(.2,.8,.2,1);
+      transform-style:preserve-3d;
+    }
+    .card.revealed .inner{ transform: rotateY(180deg); }
+    .face{
+      position:absolute;
+      inset:0;
+      border-radius: var(--radius);
+      padding:16px 16px 14px;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+      backface-visibility:hidden;
+      overflow:hidden;
+    }
+    .front{
+      background:
+        radial-gradient(800px 500px at 0% 0%, rgba(122,162,255,.22), transparent 55%),
+        linear-gradient(180deg, rgba(16,24,38,.88), rgba(14,21,33,.78));
+    }
+    .back{
+      transform: rotateY(180deg);
+      background:
+        radial-gradient(800px 500px at 100% 0%, rgba(61,220,151,.14), transparent 55%),
+        linear-gradient(180deg, rgba(16,24,38,.92), rgba(14,21,33,.82));
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      width:fit-content;
+    }
+    .title{
+      margin:10px 0 6px;
+      font-size:20px;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
+    .front .line{
+      color:var(--muted);
+      margin:0;
+      font-size:14px;
+      line-height:1.35;
+    }
+    .back .instruction{
+      margin:8px 0 0;
+      font-size:14px;
+      line-height:1.5;
+      color:var(--text);
+    }
+    .back .instruction .muted{ color:var(--muted); }
+    .hint{
+      position:absolute;
+      bottom:12px;
+      right:14px;
+      color: rgba(232,238,247,.55);
+      font-size:12px;
+      user-select:none;
+    }
+    .disabled-overlay{
+      pointer-events:none;
+      position:absolute;
+      inset:0;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.25);
+      opacity:0;
+      transition: opacity .2s ease;
+    }
+    .card.disabled .disabled-overlay{ opacity:1; }
+    .tap{
+      cursor:pointer;
+    }
+    .tap:active .face{ transform: translateY(1px); }
+    footer{
+      width:min(980px, 94vw);
+      color: rgba(232,238,247,.55);
+      font-size:12px;
+      padding: 0 8px 26px;
+    }
+    a{ color: var(--accent); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Choose Your Next Read — Decision Cards</h1>
+    <p class="sub">Six cards. One draw per day. The goal is to stop deciding and start reading.</p>
+  </header>
+
+  <div class="bar">
+    <div class="left">
+      <button id="drawBtn">Draw for today</button>
+      <button id="showBtn" class="ghost" disabled>Show my card</button>
+      <span class="pill" id="pill"><strong>Status:</strong> Not drawn today</span>
+    </div>
+    <div class="right">
+      <span class="pill"><strong>Short Read:</strong> ≤ 200 pages</span>
+      <span class="pill"><strong>Rule:</strong> no re-draw</span>
+    </div>
+  </div>
+
+  <div class="status" id="statusBox">
+    Tap <b>Draw for today</b>. Once drawn, the app locks your choice for the day.
+    <span style="display:block;margin-top:6px;">Tip: After you draw a category, pick any book from that category in your TBR. Don’t optimize.</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Data note: This page doesn't upload anything. Your daily draw is stored locally on this device (localStorage).
+  </footer>
+
+<script>
+(function(){
+  const CARDS = [
+    {
+      key: "crime",
+      name: "Crime & Mystery",
+      frontLine: "You want momentum, not depth.",
+      backHtml: `
+        From your TBR, pick a book you expect will keep you turning pages.<br><br>
+        <span class="muted">Ignore “best choice.” Pick “next chapter.”</span>`
+    },
+    {
+      key: "scifi",
+      name: "Science Fiction",
+      frontLine: "You want your brain engaged.",
+      backHtml: `
+        From your TBR, pick a book that makes you think about how a world works.<br><br>
+        <span class="muted">Tech, society, consciousness, space — any is fine.</span>`
+    },
+    {
+      key: "nonfiction",
+      name: "Non-fiction",
+      frontLine: "You want to understand something better.",
+      backHtml: `
+        From your TBR, pick a book you want to know more after finishing.<br><br>
+        <span class="muted">Topic doesn’t matter. Utility not required.</span>`
+    },
+    {
+      key: "short",
+      name: "Short Read (≤200 pages)",
+      frontLine: "Low commitment, still counts.",
+      backHtml: `
+        From your TBR, pick something ≤ 200 pages that feels easy to start.<br><br>
+        <span class="muted">This is energy management, not cheating.</span>`
+    },
+    {
+      key: "classic",
+      name: "Timeless Classic",
+      frontLine: "Still read for a reason.",
+      backHtml: `
+        From your TBR, pick something published 20+ years ago that people still read.<br><br>
+        <span class="muted">Don’t chase “like.” Chase “why it lasted.”</span>`
+    },
+    {
+      key: "wildcard",
+      name: "Surprise Me / Wildcard",
+      frontLine: "Stop deciding.",
+      backHtml: `
+        Close your eyes and pick a book you have no reason to choose.<br><br>
+        <b>Rule:</b> no re-draw, no analysis.`
+    }
+  ];
+
+  const grid = document.getElementById("grid");
+  const drawBtn = document.getElementById("drawBtn");
+  const showBtn = document.getElementById("showBtn");
+  const pill = document.getElementById("pill");
+  const statusBox = document.getElementById("statusBox");
+
+  // Local day key (YYYY-MM-DD) in user's local time.
+  function todayKey(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const STORAGE_KEY = "nextread_draw_v1";
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){
+      return null;
+    }
+  }
+
+  function saveState(state){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function setStatus(text, kind){
+    statusBox.innerHTML = text;
+    // kind currently unused; could style later
+  }
+
+  function renderCards(selectedKey, locked){
+    grid.innerHTML = "";
+    CARDS.forEach((c) => {
+      const card = document.createElement("div");
+      card.className = "card tap";
+      card.dataset.key = c.key;
+
+      if(locked && selectedKey !== c.key){
+        card.classList.add("disabled");
+      }
+      if(selectedKey === c.key){
+        card.classList.add("revealed");
+      }
+
+      card.innerHTML = `
+        <div class="inner">
+          <div class="face front">
+            <div class="tag">Front</div>
+            <div class="title">${c.name}</div>
+            <p class="line">${c.frontLine}</p>
+            <div class="hint">${locked ? "Locked" : "Ready"}</div>
+            <div class="disabled-overlay"></div>
+          </div>
+          <div class="face back">
+            <div class="tag">Back</div>
+            <div class="title">${c.name}</div>
+            <div class="instruction">${c.backHtml}</div>
+            <div class="hint">Instruction</div>
+            <div class="disabled-overlay"></div>
+          </div>
+        </div>
+      `;
+
+      // Clicking cards: only allow reveal if (1) not locked and (2) user hasn't drawn yet.
+      card.addEventListener("click", () => {
+        const state = loadState();
+        const t = todayKey();
+        const hasToday = state && state.date === t;
+
+        if(hasToday){
+          // Locked: only allow viewing the chosen card; others do nothing.
+          if(state.cardKey === c.key){
+            card.classList.toggle("revealed");
+          }
+          return;
+        }
+        // Not drawn yet: do nothing (force draw button). This prevents manual picking/rerolls.
+        // We keep card taps inert to preserve the "one draw" rule.
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  function lockUI(state){
+    const t = todayKey();
+    const hasToday = state && state.date === t;
+
+    if(hasToday){
+      drawBtn.disabled = true;
+      showBtn.disabled = false;
+      pill.innerHTML = `<strong>Status:</strong> Drawn for ${t}`;
+      setStatus(
+        `Today’s draw is locked: <b>${CARDS.find(x=>x.key===state.cardKey)?.name || "Unknown"}</b>.<br>
+         Pick any book from that category in your TBR. Don’t optimize.`
+      );
+      renderCards(state.cardKey, true);
+    }else{
+      drawBtn.disabled = false;
+      showBtn.disabled = true;
+      pill.innerHTML = `<strong>Status:</strong> Not drawn today`;
+      setStatus(
+        `Tap <b>Draw for today</b>. Once drawn, the app locks your choice for the day.
+         <span style="display:block;margin-top:6px;">Tip: After you draw a category, pick any book from that category in your TBR. Don’t optimize.</span>`
+      );
+      renderCards(null, false);
+    }
+  }
+
+  drawBtn.addEventListener("click", () => {
+    const t = todayKey();
+    const state = loadState();
+    if(state && state.date === t){
+      lockUI(state);
+      return;
+    }
+    const idx = Math.floor(Math.random() * CARDS.length);
+    const picked = CARDS[idx].key;
+    const next = { date: t, cardKey: picked };
+    saveState(next);
+    lockUI(next);
+  });
+
+  showBtn.addEventListener("click", () => {
+    const state = loadState();
+    if(!state) return;
+    // Ensure cards render in revealed state and allow toggling.
+    lockUI(state);
+    // Scroll to the chosen card on mobile.
+    const el = grid.querySelector(`[data-key="${state.cardKey}"]`);
+    if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+  });
+
+  // Init
+  lockUI(loadState());
+})();
+</script>
+</body>
+</html>
